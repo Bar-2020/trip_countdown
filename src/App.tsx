@@ -14,6 +14,7 @@ function App() {
 
     const startExploding = () => {setIsExploding(true)}
 
+    // @ts-ignore
     return (
         <div
             style={{
@@ -41,23 +42,26 @@ function App() {
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                width: '100%',
-                maxWidth: '600px',
+                width: '90%',
+                maxWidth: '500px',
             }}>
                 <h1 style={{
                     color: 'black',
                     textAlign: 'center',
-                    fontSize: width > 600 ? '2rem' : '1.5rem',
+                    fontSize: width > 600 ? '2rem' : '1.3rem',
                     margin: width > 600 ? '0 0 1.5rem 0' : '0 0 1rem 0'
                 }}>
                     Ella and Bar's Greece Countdown!! ❤️
                 </h1>
-                <FlipClockCountdown
-                    to={takeoffDate}
-                    onComplete={startExploding}
+                <FlipClockCountdown 
+                    to={takeoffDate} 
+                    onComplete={startExploding} 
                     hideOnComplete={false}
                     labelStyle={{ color: 'black' }}
-                    style={{ fontSize: width > 600 ? '1rem' : '0.7rem' }}
+                    style={{ 
+                        fontSize: width > 600 ? '0.9rem' : '0.45rem',
+                        '--fcc-digit-block-width': width > 600 ? '40px' : '30px',
+                    }}
                 />
             </div>
             {isExploding && <Confetti
