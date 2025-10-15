@@ -18,7 +18,6 @@ function App() {
 
     const startExploding = () => {setIsExploding(true)}
 
-    // @ts-ignore
     return (
         <div
             style={{
@@ -64,6 +63,7 @@ function App() {
                     labelStyle={{ color: 'black' }}
                     style={{ 
                         fontSize: width > 600 ? '0.9rem' : '0.45rem',
+                        // @ts-expect-error Added to adjust countdown width
                         '--fcc-digit-block-width': width > 600 ? '40px' : '30px',
                     }}
                 />
