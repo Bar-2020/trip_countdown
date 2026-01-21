@@ -7,10 +7,11 @@ import {useWindowSize} from "react-use";
 import { fromZonedTime } from 'date-fns-tz'
 
 // const GREECE_TAKEOFF = '2025-09-06 05:00:00'
-const CZECH_REPUBLIC_TAKEOFF = '2025-12-15 11:00:00'
+// const CZECH_REPUBLIC_TAKEOFF = '2025-12-15 11:00:00'
+const GREECE_TAKEOFF = '2026-08-09 06:30:00'
 
 
-const takeoffDate = fromZonedTime(CZECH_REPUBLIC_TAKEOFF, 'Asia/Jerusalem')
+const takeoffDate = fromZonedTime(GREECE_TAKEOFF, 'Asia/Jerusalem')
 
 function App() {
     const [isExploding, setIsExploding] = useState(false)
@@ -21,7 +22,7 @@ function App() {
     return (
         <div
             style={{
-                backgroundImage: 'url(/czechia.jpg)',
+                backgroundImage: 'url(/naxos.jpg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 opacity: 0.8,
@@ -54,7 +55,7 @@ function App() {
                     fontSize: width > 600 ? '2rem' : '1.3rem',
                     margin: width > 600 ? '0 0 1.5rem 0' : '0 0 1rem 0'
                 }}>
-                    Ella and Bar's Czech Republic Countdown!!! ❤️🪿
+                    Ella and Bar's Greece Countdown!!! ❤️🪿
                 </h1>
                 <FlipClockCountdown 
                     to={takeoffDate} 
