@@ -59,11 +59,15 @@ export const styles = {
         background:
             'linear-gradient(180deg, rgba(8, 15, 28, 0.35) 0%, rgba(8, 15, 28, 0.1) 45%, rgba(8, 15, 28, 0.5) 100%)',
     },
-    customizeButton: {
+    topBar: {
         position: 'absolute',
         top: '1rem',
         right: '1rem',
         zIndex: 2,
+        display: 'flex',
+        gap: '0.5rem',
+    },
+    pillButton: {
         display: 'flex',
         alignItems: 'center',
         gap: '0.5rem',
@@ -141,6 +145,45 @@ export const styles = {
         clip: 'rect(0, 0, 0, 0)',
         whiteSpace: 'nowrap',
         border: 0,
+    },
+
+    // Snack bar. The region spans the bottom of the screen but lets clicks through.
+    snackbarRegion: {
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        bottom: '1rem',
+        zIndex: 4,
+        display: 'flex',
+        justifyContent: 'center',
+        padding: '0 1rem',
+        boxSizing: 'border-box',
+        pointerEvents: 'none',
+    },
+    snackbar: {
+        pointerEvents: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        maxWidth: '32rem',
+        padding: '0.75rem 1rem',
+        borderRadius: '0.75rem',
+        color: '#fff',
+        background: '#0f172a',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4)',
+        fontSize: '0.95rem',
+        lineHeight: 1.4,
+    },
+    snackbarAction: {
+        flexShrink: 0,
+        padding: '0.4rem 0.7rem',
+        fontSize: '0.95rem',
+        fontWeight: 700,
+        color: '#5eead4',
+        background: 'transparent',
+        border: 'none',
+        borderRadius: '0.4rem',
     },
 
     // Customize dialog. The <dialog> is the full-screen dim overlay, since a ::backdrop
