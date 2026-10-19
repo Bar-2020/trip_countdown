@@ -66,3 +66,9 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* body is a flex row (see above), so #root would shrink to its content without this. */
+#root {
+  width: 100%;
+  min-width: 0;
+}
