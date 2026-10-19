@@ -1,11 +1,12 @@
-const MAX_SIDE = 1920
+const MAX_SIDE = 2560
 const JPEG_QUALITIES = [0.8, 0.65, 0.5]
 // localStorage allows roughly 5 million characters per origin, so stay well below that.
 const MAX_DATA_URL_LENGTH = 3_000_000
 
 /**
- * Resizes an uploaded photo to at most 1920 px on its long side and re-encodes it as a
- * JPEG data URL small enough to keep in localStorage. Rejects with a message that is
+ * Resizes an uploaded photo to at most 2560 px on its long side and re-encodes it as a
+ * JPEG data URL small enough to keep in localStorage. The photo fills the screen, so a
+ * smaller size looks soft on high-density displays. Rejects with a message that is
  * safe to show to the visitor.
  */
 export async function compressImage(file: File): Promise<string> {

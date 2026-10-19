@@ -9,7 +9,7 @@ const TAKEOFF_PARAM = 'takeoff'
 /**
  * The link that shares a trip: this page with the destination and takeoff as query
  * parameters. The photo is left out on purpose. Even after compression a photo is a
- * base64 string of about 190 KB for a smooth shot and 1.7 MB for a very detailed one
+ * base64 string of about 280 KB for a smooth shot and 2.6 MB for a very detailed one
  * (3 MB at most), which would turn a link of about 100 characters into one of hundreds
  * of thousands. Chat apps break such links and CloudFront answers URLs over 8,192 bytes
  * with a 414.

@@ -35,7 +35,7 @@ Details worth knowing:
 
 - **Where it is stored:** your browser's `localStorage`, under the key `tripCountdown:v1`. It stays on this browser on this device. Clearing site data erases it, and it does not sync between devices.
 - **One trip only:** there is a single saved set. Saving replaces it, and **Reset to defaults** deletes it.
-- **Photo handling:** uploads are scaled down to at most 1920 px on the long side and re-encoded as JPEG (quality is lowered if needed) so they stay well inside the roughly 5 MB browser storage limit. Even a 28 MB, 24 megapixel worst-case test image shrinks to about 1.2 MB. Transparent PNGs are flattened onto white. HEIC photos may not open in every browser; JPEG, PNG and WebP always do.
+- **Photo handling:** uploads are scaled down to at most 2560 px on the long side, which keeps them sharp on retina screens, and re-encoded as JPEG (quality is lowered if needed) so they stay well inside the roughly 5 MB browser storage limit. They are shrunk with high-quality smoothing, so thin details such as branches and wires stay clean instead of turning into jagged dashes. Even a 21 MB, 24 megapixel photo of pure noise shrinks to about 0.9 MB. Transparent PNGs are flattened onto white. HEIC photos may not open in every browser; JPEG, PNG and WebP always do.
 - **When something goes wrong:** if storage is full or blocked, you get a message and your previous trip is left untouched. If stored data is missing or corrupt, the app quietly shows the sample countdown.
 - **Before you save anything,** the page shows a sample countdown 30 days away so it never opens on a finished clock.
 
@@ -49,7 +49,7 @@ https://your-site.example/?destination=Santorini&takeoff=2027-06-01T04%3A30%3A00
 
 When someone opens the link, the trip is saved in their browser and a message says they have been shared a trip. **Undo** puts back whatever they had before. The parameters are then removed from the address bar, so reloading the page, or customizing the trip, is never overwritten by the link again.
 
-- **The photo is not included.** Even after compression a photo is about 190 KB of base64 text for a smooth shot and 1.7 MB for a very detailed one, which would make the link hundreds of thousands of characters long. Chat apps break links like that, and [CloudFront rejects URLs over 8,192 bytes](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) with a 414. Without the photo the link is about 100 characters. The person who opens it sees the default gradient and can add their own photo.
+- **The photo is not included.** Even after compression a photo is about 280 KB of base64 text for a smooth shot and 2.6 MB for a very detailed one, which would make the link hundreds of thousands of characters long. Chat apps break links like that, and [CloudFront rejects URLs over 8,192 bytes](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) with a 414. Without the photo the link is about 100 characters. The person who opens it sees the default gradient and can add their own photo.
 - **The takeoff is an exact UTC instant**, so the countdown ends at the same moment for everyone, whatever their time zone.
 - **Links are checked like stored data.** A link with a missing, oversized or unreadable destination or takeoff is ignored with a message and changes nothing.
 - **Opening your own link changes nothing**, so you keep your photo.
