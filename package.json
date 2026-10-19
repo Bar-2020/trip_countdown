@@ -1,18 +1,25 @@
 {
   "name": "trip_countdown",
+  "description": "A customizable flip clock countdown to your next trip.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "license": "MIT",
+  "author": "Bar Almog",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bar-2020/trip_countdown.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "verify": "npm run lint && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@leenguyen/react-flip-clock-countdown": "^1.7.1",
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.1.0",
