@@ -78,6 +78,34 @@ docs/                README screenshots
 
 The build is plain static files in `dist/`, and the app has a single page with no client-side routing, so no rewrite rules are needed. Upload `dist/` to any static host such as Amazon S3 with CloudFront, Netlify, Vercel or GitHub Pages.
 
+### Amazon S3 + CloudFront with Terraform
+
+The `terraform/` folder builds a private S3 bucket behind CloudFront (on the free `*.cloudfront.net` address), a GitHub OIDC role that may deploy from `main`, and a 1 USD monthly budget alert sent by email. Everything is created in `eu-north-1` by default. To use another region, change `aws_region` in `terraform/variables.tf` and the backend region in `terraform/versions.tf`.
+
+You need Terraform 1.10 or newer, the AWS CLI, and AWS credentials for an admin user or SSO profile (not the root user).
+
+```bash
+# 1. A bucket for Terraform state (the name must be globally unique)
+aws s3api create-bucket --bucket <state-bucket> --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
+aws s3api put-bucket-versioning --bucket <state-bucket> --versioning-configuration Status=Enabled
+aws s3api put-public-access-block --bucket <state-bucket> \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+
+# 2. Create the infrastructure, then confirm the budget alert email AWS sends you.
+#    Deploying your own fork? Also pass -var="github_repo=<owner>/<repo>".
+cd terraform
+terraform init -backend-config="bucket=<state-bucket>"   # commit the generated .terraform.lock.hcl
+terraform apply -var="alert_email=you@example.com"
+
+# 3. Print the values to copy into GitHub
+terraform output
+```
+
+Then add `AWS_ROLE_ARN`, `S3_BUCKET` and `CLOUDFRONT_DISTRIBUTION_ID` in the repository under Settings, Secrets and variables, Actions, Variables.
+
+From then on, every push to `main` runs `.github/workflows/deploy.yml`: it lints, builds, uploads `dist/` to S3 and clears CloudFront's cached copies. It signs in to AWS through OIDC, so no AWS keys are stored in GitHub, and it skips itself until `AWS_ROLE_ARN` is set. Tear everything down with `terraform destroy`, then delete the state bucket.
+
 ## License
 
 The code is released under the [MIT License](LICENSE).
