@@ -45,7 +45,7 @@ jobs:
           aws s3 sync dist/assets "s3://$S3_BUCKET/assets" \
             --cache-control "public,max-age=31536000,immutable"
 
-      # index.html and the unhashed JPGs in public/ keep a short cache.
+      # index.html and favicon.svg are not fingerprinted, so they keep a short cache.
       - name: Upload everything else
         run: |
           aws s3 sync dist "s3://$S3_BUCKET" \
