@@ -116,18 +116,17 @@ With `enable_github_deploy` on (the default), every push to `main` then runs `.g
 
 #### If your account blocks the GitHub sign-in
 
-Some accounts, including ones created through the new AWS experience, are under an organization policy that forbids creating the OIDC provider. `terraform apply` then fails on `aws_iam_openid_connect_provider.github` with `explicit deny in a service control policy`. Everything else is still created. Set `enable_github_deploy = false`, run `terraform apply` again, and upload the site from your own computer after signing in to AWS. In PowerShell:
+Some accounts, including ones created through the new AWS experience, are under an organization policy that forbids creating the OIDC provider. `terraform apply` then fails on `aws_iam_openid_connect_provider.github` with `explicit deny in a service control policy`. Everything else is still created. Set `enable_github_deploy = false`, run `terraform apply` again, and deploy from your own computer after signing in to AWS (`aws login`):
 
-```powershell
-npm ci; npm run build
-$Bucket = terraform -chdir=terraform output -raw bucket_name
-$Dist = terraform -chdir=terraform output -raw distribution_id
-aws s3 sync dist/assets "s3://$Bucket/assets" --cache-control "public,max-age=31536000,immutable"
-aws s3 sync dist "s3://$Bucket" --exclude "assets/*" --delete --cache-control "public,max-age=300"
-aws cloudfront create-invalidation --distribution-id $Dist --paths "/*"
+```bash
+npm run deploy
 ```
 
-In bash, use `BUCKET=$(terraform -chdir=terraform output -raw bucket_name)`, `DIST=$(terraform -chdir=terraform output -raw distribution_id)` and `"s3://$BUCKET"` instead. Run the same commands after every change you want online.
+This builds the site, uploads `dist/` to the bucket (fingerprinted files under `assets/` are cached for a year, `index.html` and `favicon.svg` for 5 minutes), and clears CloudFront's cached copies. It works the same in PowerShell, bash and anywhere else Node runs. Run it after every change you want online.
+
+- It reads the bucket and distribution names from `terraform output`, so run it on the machine where you ran Terraform. Without Terraform, set the `S3_BUCKET` and `CLOUDFRONT_DISTRIBUTION_ID` environment variables instead.
+- Try `npm run deploy -- --dry-run` first to list what would be uploaded without changing anything.
+- The script is `scripts/deploy.mjs`. It needs the AWS CLI and, unless you set those variables, Terraform on your PATH.
 
 ## License
 
