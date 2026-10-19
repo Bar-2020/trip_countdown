@@ -4,6 +4,13 @@ A flip clock countdown to your next trip, made to be yours. Choose a destination
 
 ![A flip clock counting down to Santorini over a sunset background](docs/home.jpg)
 
+## Live site
+
+- [Amazon CloudFront](https://d3mqyjcxhrt1tj.cloudfront.net/)
+- [Netlify](https://trip-countdown.netlify.app/)
+
+Both serve the same app. Your trip is saved in your browser separately for each address, so a trip saved on one site does not appear on the other. Use **Share** to carry it across.
+
 ## Features
 
 - **Flip clock countdown** to the second, with a plain "62 days to go" line and the exact takeoff time underneath.
