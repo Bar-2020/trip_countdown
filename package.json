@@ -12,7 +12,6 @@
   "dependencies": {
     "@leenguyen/react-flip-clock-countdown": "^1.7.1",
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.1.0",
