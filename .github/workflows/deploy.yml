@@ -14,14 +14,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The AWS values are stored as secrets, not variables: GitHub masks secrets in workflow
+  # logs, while variables are printed in plain text (public in a public repo) and these
+  # values contain the AWS account ID. A job-level `if` cannot read secrets, so this small
+  # job reports whether they exist, and the deploy job is skipped until AWS_ROLE_ARN is set.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.gate.outputs.configured }}
+    steps:
+      - id: gate
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [ -n "$AWS_ROLE_ARN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
-    # Skipped until the Terraform outputs are added as repo Actions variables.
-    if: ${{ vars.AWS_ROLE_ARN != '' }}
+    needs: check
+    if: ${{ needs.check.outputs.configured == 'true' }}
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ${{ vars.AWS_REGION || 'eu-north-1' }}
-      S3_BUCKET: ${{ vars.S3_BUCKET }}
-      CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,8 +55,10 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          # Also hide the account ID wherever else it shows up in the logs.
+          mask-aws-account-id: true
 
       # Vite fingerprints everything under assets/, so it can be cached for a year.
       - name: Upload hashed assets

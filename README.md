@@ -98,11 +98,11 @@ cd terraform
 terraform init -backend-config="bucket=<state-bucket>"   # commit the generated .terraform.lock.hcl
 terraform apply -var="alert_email=you@example.com"
 
-# 3. Print the values to copy into GitHub
+# 3. Print the values to save as GitHub secrets
 terraform output
 ```
 
-Then add `AWS_ROLE_ARN`, `S3_BUCKET` and `CLOUDFRONT_DISTRIBUTION_ID` in the repository under Settings, Secrets and variables, Actions, Variables.
+Then save `AWS_ROLE_ARN`, `S3_BUCKET` and `CLOUDFRONT_DISTRIBUTION_ID` as repository **secrets**, either under Settings, Secrets and variables, Actions, Secrets, or with `gh secret set NAME --body VALUE`. Use secrets, not variables: GitHub masks secrets in the workflow logs, while variables are printed in plain text, and in a public repository anyone can read those logs. These values contain your AWS account ID.
 
 From then on, every push to `main` runs `.github/workflows/deploy.yml`: it lints, builds, uploads `dist/` to S3 and clears CloudFront's cached copies. It signs in to AWS through OIDC, so no AWS keys are stored in GitHub, and it skips itself until `AWS_ROLE_ARN` is set. Tear everything down with `terraform destroy`, then delete the state bucket.
 
