@@ -1,14 +1,22 @@
 # Trip Countdown
 
-A flip clock countdown to your next trip, made to be yours. Choose a destination, add your own photo and set the takeoff date and time. Everything is saved in your browser, so the countdown is waiting for you every time you come back. There is no account and no backend, and nothing ever leaves your device.
+A flip clock countdown to your next trip, made to be yours. Choose a destination, add your own photo and set the takeoff date and time. Everything is saved in your browser, so the countdown is waiting for you every time you come back. There is no account and no backend, and nothing leaves your device unless you choose to share a link.
 
 ![A flip clock counting down to Santorini over a sunset background](docs/home.jpg)
+
+## Live site
+
+- [Amazon CloudFront](https://d3mqyjcxhrt1tj.cloudfront.net/)
+- [Netlify](https://trip-countdown.netlify.app/)
+
+Both serve the same app. Your trip is saved in your browser separately for each address, so a trip saved on one site does not appear on the other. Use **Share** to carry it across.
 
 ## Features
 
 - **Flip clock countdown** to the second, with a plain "62 days to go" line and the exact takeoff time underneath.
 - **Make it yours.** Set the destination name, the takeoff date and time, and a background photo. Without a photo you get a gradient.
 - **Remembers your trip.** Saved in `localStorage`, one trip at a time. Saving a new trip replaces the old one.
+- **Share your trip.** The Share button copies a link with your destination and takeoff time. Whoever opens it gets the trip saved in their browser, with a message that lets them undo it.
 - **Photos just work.** Big phone photos are resized and compressed in the browser so they fit in storage. No upload to any server.
 - **Tab title and favicon follow the destination**, so a pinned tab says where you are headed.
 - **Confetti when takeoff arrives**, and a "Plan your next trip" button once it has.
@@ -34,9 +42,25 @@ Details worth knowing:
 
 - **Where it is stored:** your browser's `localStorage`, under the key `tripCountdown:v1`. It stays on this browser on this device. Clearing site data erases it, and it does not sync between devices.
 - **One trip only:** there is a single saved set. Saving replaces it, and **Reset to defaults** deletes it.
-- **Photo handling:** uploads are scaled down to at most 1920 px on the long side and re-encoded as JPEG (quality is lowered if needed) so they stay well inside the roughly 5 MB browser storage limit. Even a 28 MB, 24 megapixel worst-case test image shrinks to about 1.2 MB. Transparent PNGs are flattened onto white. HEIC photos may not open in every browser; JPEG, PNG and WebP always do.
+- **Photo handling:** uploads are scaled down to at most 2560 px on the long side, which keeps them sharp on retina screens, and re-encoded as JPEG (quality is lowered if needed) so they stay well inside the roughly 5 MB browser storage limit. They are shrunk with high-quality smoothing, so thin details such as branches and wires stay clean instead of turning into jagged dashes. Even a 21 MB, 24 megapixel photo of pure noise shrinks to about 0.9 MB. Transparent PNGs are flattened onto white. HEIC photos may not open in every browser; JPEG, PNG and WebP always do.
 - **When something goes wrong:** if storage is full or blocked, you get a message and your previous trip is left untouched. If stored data is missing or corrupt, the app quietly shows the sample countdown.
 - **Before you save anything,** the page shows a sample countdown 30 days away so it never opens on a finished clock.
+
+## Sharing a trip
+
+Once you have saved a trip, a **Share** button appears next to Customize. It copies a link like this to the clipboard:
+
+```text
+https://your-site.example/?destination=Santorini&takeoff=2027-06-01T04%3A30%3A00.000Z
+```
+
+When someone opens the link, the trip is saved in their browser and a message says they have been shared a trip. **Undo** puts back whatever they had before. The parameters are then removed from the address bar, so reloading the page, or customizing the trip, is never overwritten by the link again.
+
+- **The photo is not included.** Even after compression a photo is about 280 KB of base64 text for a smooth shot and 2.6 MB for a very detailed one, which would make the link hundreds of thousands of characters long. Chat apps break links like that, and [CloudFront rejects URLs over 8,192 bytes](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) with a 414. Without the photo the link is about 100 characters. The person who opens it sees the default gradient and can add their own photo.
+- **The takeoff is an exact UTC instant**, so the countdown ends at the same moment for everyone, whatever their time zone.
+- **Links are checked like stored data.** A link with a missing, oversized or unreadable destination or takeoff is ignored with a message and changes nothing.
+- **Opening your own link changes nothing**, so you keep your photo.
+- **Privacy:** the destination and date are in the link, so the host sees them in its request logs when the link is opened. Sharing is always your choice, and nothing is sent anywhere until someone opens the link.
 
 ## Tech stack
 
@@ -65,6 +89,9 @@ npm run verify     # lint, then build: run this before pushing
 src/
   App.tsx            the page: background, card, flip clock, confetti
   SettingsPanel.tsx  the Customize dialog
+  Snackbar.tsx       the message bar at the bottom, with an optional action
+  notice.ts          useNotice, the state behind the snack bar
+  shareLink.ts       building and reading share links, and applying one on page load
   tripSettings.ts    saved trip: types, defaults, localStorage, useTripSettings hook
   imageUtils.ts      in-browser photo resize and compression
   pageMeta.ts        browser tab title and favicon

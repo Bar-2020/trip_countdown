@@ -49,13 +49,19 @@ export function fromDateTimeLocal(value: string): string | null {
     return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
 
-// Stored data is untrusted: it may be hand-edited, truncated or from an older version.
+// Stored data and share links are untrusted, so both go through these checks.
+export const isValidDestination = (value: unknown): value is string =>
+    typeof value === 'string' && value.trim() !== '' && value.length <= MAX_DESTINATION_LENGTH
+
+export const isValidTakeoff = (value: unknown): value is string =>
+    typeof value === 'string' && !Number.isNaN(Date.parse(value))
+
+// Stored data may be hand-edited, truncated or from an older version.
 function parseStored(value: unknown): TripSettings | null {
     if (typeof value !== 'object' || value === null) return null
     const { version, destination, takeoff, photo } = value as Record<string, unknown>
     if (version !== STORAGE_VERSION) return null
-    if (typeof destination !== 'string' || !destination.trim() || destination.length > MAX_DESTINATION_LENGTH) return null
-    if (typeof takeoff !== 'string' || Number.isNaN(Date.parse(takeoff))) return null
+    if (!isValidDestination(destination) || !isValidTakeoff(takeoff)) return null
     if (photo !== null && (typeof photo !== 'string' || !DATA_URL_PATTERN.test(photo))) return null
     return { destination, takeoff, photo }
 }

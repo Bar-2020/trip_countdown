@@ -11,12 +11,17 @@ export const keyframes = {
         { opacity: 0, transform: 'translateY(14px)' },
         { opacity: 1, transform: 'translateY(0)' },
     ],
+    slideUp: [
+        { opacity: 0, transform: 'translateY(16px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+    ],
 } satisfies Record<string, Keyframe[]>
 
 export const timings = {
     fadeIn: { duration: 900, easing: 'ease-out', fill: 'both' },
     kenBurns: { duration: 40_000, easing: 'ease-in-out', iterations: Infinity, direction: 'alternate' },
     rise: { duration: 600, easing: 'ease-out', fill: 'both' },
+    slideUp: { duration: 250, easing: 'ease-out', fill: 'both' },
 } satisfies Record<string, KeyframeAnimationOptions>
 
 /**

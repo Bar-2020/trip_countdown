@@ -6,7 +6,10 @@ import {useInterval, useMedia, useWindowSize} from "react-use";
 import {differenceInCalendarDays, format, isToday, isTomorrow} from 'date-fns'
 import {keyframes, timings, useAnimate} from './animations'
 import SettingsPanel from './SettingsPanel'
+import Snackbar from './Snackbar'
+import {useNotice} from './notice'
 import {usePageMeta} from './pageMeta'
+import {buildShareUrl, useReceiveSharedTrip} from './shareLink'
 import {styles} from './styles'
 import {backgroundFor, useTripSettings} from './tripSettings'
 
@@ -47,6 +50,7 @@ function Backdrop({photo, animate}: { photo: string | null, animate: boolean }) 
 
 function App() {
     const { settings, isCustom, save, reset } = useTripSettings()
+    const { notice, notify, dismiss } = useNotice()
     const [isPanelOpen, setIsPanelOpen] = useState(false)
     const [confettiDoneFor, setConfettiDoneFor] = useState<string | null>(null)
     const [now, setNow] = useState(() => Date.now())
@@ -59,6 +63,16 @@ function App() {
     useInterval(() => setNow(Date.now()), 1000)
     usePageMeta(settings.destination)
     useAnimate(cardRef, keyframes.rise, timings.rise, !prefersReducedMotion)
+    useReceiveSharedTrip({ save, reset, notify })
+
+    const handleShare = async () => {
+        try {
+            await navigator.clipboard.writeText(buildShareUrl(settings))
+            notify(`Link copied to the clipboard.${settings.photo ? ' Your photo is not included.' : ''}`)
+        } catch {
+            notify("Couldn't copy the link. Check that this browser allows clipboard access.")
+        }
+    }
 
     const takeoffMs = Date.parse(settings.takeoff)
     const remainingMs = takeoffMs - now
@@ -73,18 +87,33 @@ function App() {
             <Backdrop key={settings.photo ?? 'default'} photo={settings.photo} animate={!prefersReducedMotion} />
             <div style={styles.scrim} />
 
-            <button
-                type="button"
-                aria-haspopup="dialog"
-                onClick={() => setIsPanelOpen(true)}
-                style={styles.customizeButton}
-            >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-                Customize
-            </button>
+            <div style={styles.topBar}>
+                {/* Only a saved trip can be shared, not the sample countdown. */}
+                {isCustom && (
+                    <button type="button" onClick={handleShare} style={styles.pillButton}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <path d="m8.6 13.5 6.8 4" />
+                            <path d="m15.4 6.5-6.8 4" />
+                        </svg>
+                        Share
+                    </button>
+                )}
+                <button
+                    type="button"
+                    aria-haspopup="dialog"
+                    onClick={() => setIsPanelOpen(true)}
+                    style={styles.pillButton}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                    Customize
+                </button>
+            </div>
 
             <main ref={cardRef} style={{ ...styles.card, ...(isNarrow && styles.cardNarrow) }}>
                 <h1 style={{ ...styles.heading, ...(isNarrow && styles.headingNarrow) }}>
@@ -138,6 +167,8 @@ function App() {
                     style={styles.confetti}
                 />
             )}
+
+            <Snackbar notice={notice} onDismiss={dismiss} animate={!prefersReducedMotion} />
 
             {isPanelOpen && (
                 <SettingsPanel

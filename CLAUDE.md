@@ -21,10 +21,12 @@ This is a single-page React + TypeScript + Vite app, a trip countdown timer that
 **Files in `src/`:**
 - `App.tsx`: the page. Background photo, glass card, flip clock, status text, confetti, and the Customize button.
 - `SettingsPanel.tsx`: the Customize dialog (a native `<dialog>`). It is mounted only while open, so its draft state always starts from the saved trip.
+- `shareLink.ts`: `buildShareUrl`, `readShareLink`, and `useReceiveSharedTrip`, which applies a share link when the page opens.
+- `Snackbar.tsx` and `notice.ts`: the message bar (a live region that stays mounted) and `useNotice`, whose `notify` shows a message with an optional action. The hook lives in a `.ts` file because `react-refresh/only-export-components` warns when a component file also exports a hook.
 - `tripSettings.ts`: the `TripSettings` type, defaults, `localStorage` load/save/clear with validation, and the `useTripSettings` hook.
 - `styles.ts`: every style in the app, as one object typed `satisfies Record<string, CSSProperties>`.
 - `animations.ts`: the fade-in, Ken Burns and rise keyframes plus `useAnimate`, which plays them with the Web Animations API.
-- `imageUtils.ts`: `compressImage`, which resizes an uploaded photo to at most 1920 px and re-encodes it as a JPEG data URL small enough for `localStorage`.
+- `imageUtils.ts`: `compressImage`, which resizes an uploaded photo to at most 2560 px (the photo fills the screen, so less looks soft on retina displays) and re-encodes it as a JPEG data URL small enough for `localStorage`. It sets `imageSmoothingQuality = 'high'`: the default filter breaks thin lines into jagged dashes when a large photo is shrunk, which looks pixelated.
 - `pageMeta.ts`: `usePageMeta` keeps `document.title` and the favicon in sync with the destination.
 
 **How it works:**
@@ -32,6 +34,7 @@ This is a single-page React + TypeScript + Vite app, a trip countdown timer that
 - Only one trip is stored, under the key `tripCountdown:v1`. Saving replaces it, and a failed save (storage full or blocked) leaves the previous trip intact. If the stored shape ever changes, bump the version in the key and in `STORAGE_VERSION`.
 - Stored data is untrusted. `parseStored` rejects anything malformed (including photos that are not `null` or a JPEG, PNG or WebP data URL) and the app falls back to the defaults.
 - With nothing saved, a sample countdown 30 days out is shown, computed once per page load.
+- **Sharing:** the Share button (shown only for a saved trip) copies `<page>?destination=...&takeoff=<UTC ISO>` to the clipboard. The photo is deliberately not in the link: a compressed photo is about 280 KB (smooth) to 2.6 MB (very detailed) of base64 against a roughly 100 character link, and CloudFront refuses URLs over 8,192 bytes with a 414. Opening a link saves its trip with `photo: null`, shows a snack bar with Undo (restoring the previous trip, or the sample if there was none), and removes the two parameters with `history.replaceState` so a reload never reapplies it. Links go through the same `isValidDestination` and `isValidTakeoff` checks as stored data. A link matching the saved trip is a no-op, so opening your own link keeps your photo. `useReceiveSharedTrip` runs in a layout effect and removes the parameters before anything else, which makes React StrictMode's second run harmless.
 - Once the takeoff time passes (including on page load), the card shows the finished state and a "Plan your next trip" button, and `react-confetti` plays one burst unless the visitor prefers reduced motion.
 - `FlipClockCountdown` is given the takeoff as a number and a `key` so it remounts when the trip changes. It is wrapped in `aria-hidden`; screen readers get a sentence that changes once an hour instead.
 - Layout is responsive: `useWindowSize` from `react-use` drives font sizes and padding, and below 600 px the clock is zoomed to fit the card.
