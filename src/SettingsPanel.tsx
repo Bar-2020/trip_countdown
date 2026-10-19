@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, CSSProperties, FormEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import { compressImage } from './imageUtils'
+import { styles } from './styles'
 import { MAX_DESTINATION_LENGTH, backgroundFor, fromDateTimeLocal, toDateTimeLocal } from './tripSettings'
 import type { SaveResult, TripSettings } from './tripSettings'
 
@@ -14,47 +15,10 @@ interface SettingsPanelProps {
     onClose: () => void
 }
 
-const labelStyle: CSSProperties = {
-    display: 'block',
-    fontWeight: 600,
-    fontSize: '0.9rem',
-    marginBottom: '0.35rem',
-}
-
-// 16px text stops iOS Safari from zooming the page when a field is focused.
-const inputStyle: CSSProperties = {
-    width: '100%',
-    boxSizing: 'border-box',
-    padding: '0.65rem 0.75rem',
-    fontSize: '1rem',
-    fontFamily: 'inherit',
-    color: '#16202e',
-    background: '#fff',
-    colorScheme: 'light',
-    border: '1px solid #94a3b8',
-    borderRadius: '0.6rem',
-}
-
-const buttonStyle: CSSProperties = {
-    padding: '0.65rem 1.1rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-    borderRadius: '0.6rem',
-    border: '1px solid transparent',
-}
-
-const primaryButtonStyle: CSSProperties = { ...buttonStyle, background: '#0f766e', color: '#fff' }
-const secondaryButtonStyle: CSSProperties = {
-    ...buttonStyle,
-    background: '#fff',
-    color: '#16202e',
-    borderColor: '#94a3b8',
-}
-
 function SettingsPanel({ settings, isCustom, onSave, onReset, onClose }: SettingsPanelProps) {
     const dialogRef = useRef<HTMLDialogElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const pressStartedOnBackdrop = useRef(false)
+    const pressStartedOnOverlay = useRef(false)
 
     // The panel is mounted only while open, so the draft always starts from the saved trip.
     const [destination, setDestination] = useState(settings.destination)
@@ -109,146 +73,117 @@ function SettingsPanel({ settings, isCustom, onSave, onReset, onClose }: Setting
     return (
         <dialog
             ref={dialogRef}
-            className="trip-dialog"
             aria-labelledby="trip-settings-title"
             onClose={onClose}
-            // Only a press that starts and ends on the backdrop closes it, so dragging a
-            // text selection out of a field does not throw the draft away.
-            onMouseDown={(event) => {
-                pressStartedOnBackdrop.current = event.target === event.currentTarget
-            }}
-            onClick={(event) => {
-                if (pressStartedOnBackdrop.current && event.target === event.currentTarget) requestClose()
-            }}
-            style={{
-                width: 'min(92vw, 30rem)',
-                maxHeight: '92dvh',
-                padding: 0,
-                border: 'none',
-                borderRadius: '1.25rem',
-                color: '#16202e',
-                background: '#fff',
-                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45)',
-            }}
+            style={styles.dialog}
         >
-            <form
-                onSubmit={handleSubmit}
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem', padding: '1.5rem' }}
+            <div
+                // Only a press that starts and ends on the dimmed overlay closes the dialog, so
+                // dragging a text selection out of a field does not throw the draft away.
+                onMouseDown={(event) => {
+                    pressStartedOnOverlay.current = event.target === event.currentTarget
+                }}
+                onClick={(event) => {
+                    if (pressStartedOnOverlay.current && event.target === event.currentTarget) requestClose()
+                }}
+                style={styles.dialogWrapper}
             >
-                <div>
-                    <h2 id="trip-settings-title" style={{ margin: 0, fontSize: '1.35rem' }}>
-                        Customize your trip
-                    </h2>
-                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: '#334155' }}>
-                        Saved in this browser only. One trip is kept at a time, so saving replaces the previous one.
-                    </p>
-                </div>
+                <form onSubmit={handleSubmit} style={styles.dialogPanel}>
+                    <div>
+                        <h2 id="trip-settings-title" style={styles.dialogTitle}>
+                            Customize your trip
+                        </h2>
+                        <p style={styles.dialogIntro}>
+                            Saved in this browser only. One trip is kept at a time, so saving replaces the previous one.
+                        </p>
+                    </div>
 
-                <div>
-                    <label htmlFor="trip-destination" style={labelStyle}>Destination</label>
-                    <input
-                        id="trip-destination"
-                        type="text"
-                        required
-                        maxLength={MAX_DESTINATION_LENGTH}
-                        value={destination}
-                        onChange={(event) => setDestination(event.target.value)}
-                        style={inputStyle}
-                    />
-                </div>
-
-                <div>
-                    <label htmlFor="trip-takeoff" style={labelStyle}>Takeoff date and time</label>
-                    <input
-                        id="trip-takeoff"
-                        type="datetime-local"
-                        required
-                        value={takeoffLocal}
-                        onChange={(event) => setTakeoffLocal(event.target.value)}
-                        style={inputStyle}
-                    />
-                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#334155' }}>
-                        Uses this device's time zone.
-                    </p>
-                </div>
-
-                <fieldset style={{ margin: 0, padding: 0, border: 'none', minWidth: 0 }}>
-                    <legend style={{ ...labelStyle, padding: 0 }}>Destination photo</legend>
-                    <div
-                        role="img"
-                        aria-label="Preview of the background"
-                        style={{
-                            height: '9rem',
-                            borderRadius: '0.75rem',
-                            backgroundImage: backgroundFor(photo),
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                        }}
-                    />
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginTop: '0.6rem' }}>
-                        <button
-                            type="button"
-                            className="trip-btn"
-                            disabled={isCompressing}
-                            onClick={() => fileInputRef.current?.click()}
-                            style={{ ...secondaryButtonStyle, padding: '0.5rem 0.9rem', fontSize: '0.9rem' }}
-                        >
-                            {isCompressing ? 'Optimizing photo…' : photo ? 'Choose another photo' : 'Upload a photo'}
-                        </button>
-                        {photo && (
-                            <button
-                                type="button"
-                                className="trip-btn"
-                                onClick={() => setPhoto(null)}
-                                style={{ ...secondaryButtonStyle, padding: '0.5rem 0.9rem', fontSize: '0.9rem' }}
-                            >
-                                Use default background
-                            </button>
-                        )}
+                    <div>
+                        <label htmlFor="trip-destination" style={styles.label}>Destination</label>
                         <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            data-testid="photo-input"
-                            onChange={handleFile}
+                            id="trip-destination"
+                            type="text"
+                            required
+                            maxLength={MAX_DESTINATION_LENGTH}
+                            value={destination}
+                            onChange={(event) => setDestination(event.target.value)}
+                            style={styles.input}
                         />
                     </div>
-                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: '#334155' }}>
-                        Large photos are resized and compressed so they fit in your browser's storage.
-                    </p>
-                </fieldset>
 
-                {error && (
-                    <p role="alert" style={{ margin: 0, padding: '0.6rem 0.75rem', borderRadius: '0.5rem', background: '#fee2e2', color: '#7f1d1d', fontSize: '0.9rem' }}>
-                        {error}
-                    </p>
-                )}
+                    <div>
+                        <label htmlFor="trip-takeoff" style={styles.label}>Takeoff date and time</label>
+                        <input
+                            id="trip-takeoff"
+                            type="datetime-local"
+                            required
+                            value={takeoffLocal}
+                            onChange={(event) => setTakeoffLocal(event.target.value)}
+                            style={styles.input}
+                        />
+                        <p style={styles.helpText}>Uses this device's time zone.</p>
+                    </div>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem' }}>
-                    {isCustom && (
+                    <fieldset style={styles.fieldset}>
+                        <legend style={styles.legend}>Destination photo</legend>
+                        <div
+                            role="img"
+                            aria-label="Preview of the background"
+                            style={{ ...styles.photoPreview, backgroundImage: backgroundFor(photo) }}
+                        />
+                        <div style={styles.photoActions}>
+                            <button
+                                type="button"
+                                disabled={isCompressing}
+                                onClick={() => fileInputRef.current?.click()}
+                                style={{ ...styles.smallButton, ...(isCompressing && styles.buttonDisabled) }}
+                            >
+                                {isCompressing ? 'Optimizing photo…' : photo ? 'Choose another photo' : 'Upload a photo'}
+                            </button>
+                            {photo && (
+                                <button type="button" onClick={() => setPhoto(null)} style={styles.smallButton}>
+                                    Use default background
+                                </button>
+                            )}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                data-testid="photo-input"
+                                onChange={handleFile}
+                            />
+                        </div>
+                        <p style={styles.photoNote}>
+                            Large photos are resized and compressed so they fit in your browser's storage.
+                        </p>
+                    </fieldset>
+
+                    {error && <p role="alert" style={styles.error}>{error}</p>}
+
+                    <div style={styles.actions}>
+                        {isCustom && (
+                            <button type="button" onClick={handleReset} style={styles.resetButton}>
+                                {confirmingReset ? 'Click again to erase your trip' : 'Reset to defaults'}
+                            </button>
+                        )}
                         <button
                             type="button"
-                            className="trip-btn"
-                            onClick={handleReset}
-                            style={{ ...secondaryButtonStyle, color: '#991b1b', borderColor: '#fca5a5', marginRight: 'auto' }}
+                            onClick={requestClose}
+                            style={{ ...styles.cancelButton, ...(!isCustom && styles.pushRight) }}
                         >
-                            {confirmingReset ? 'Click again to erase your trip' : 'Reset to defaults'}
+                            Cancel
                         </button>
-                    )}
-                    <button
-                        type="button"
-                        className="trip-btn"
-                        onClick={requestClose}
-                        style={{ ...secondaryButtonStyle, marginLeft: isCustom ? 0 : 'auto' }}
-                    >
-                        Cancel
-                    </button>
-                    <button type="submit" className="trip-btn" disabled={isCompressing} style={primaryButtonStyle}>
-                        Save trip
-                    </button>
-                </div>
-            </form>
+                        <button
+                            type="submit"
+                            disabled={isCompressing}
+                            style={{ ...styles.primaryButton, ...(isCompressing && styles.buttonDisabled) }}
+                        >
+                            Save trip
+                        </button>
+                    </div>
+                </form>
+            </div>
         </dialog>
     )
 }

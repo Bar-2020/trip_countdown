@@ -68,7 +68,8 @@ src/
   tripSettings.ts    saved trip: types, defaults, localStorage, useTripSettings hook
   imageUtils.ts      in-browser photo resize and compression
   pageMeta.ts        browser tab title and favicon
-  App.css            keyframes, focus styles and other things inline styles cannot do
+  styles.ts          every style in the app, typed as Record<string, CSSProperties>
+  animations.ts      fade-in, Ken Burns and rise animations (Web Animations API)
 public/              the default favicon
 docs/                README screenshots
 ```

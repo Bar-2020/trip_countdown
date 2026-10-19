@@ -22,6 +22,8 @@ This is a single-page React + TypeScript + Vite app, a trip countdown timer that
 - `App.tsx`: the page. Background photo, glass card, flip clock, status text, confetti, and the Customize button.
 - `SettingsPanel.tsx`: the Customize dialog (a native `<dialog>`). It is mounted only while open, so its draft state always starts from the saved trip.
 - `tripSettings.ts`: the `TripSettings` type, defaults, `localStorage` load/save/clear with validation, and the `useTripSettings` hook.
+- `styles.ts`: every style in the app, as one object typed `satisfies Record<string, CSSProperties>`.
+- `animations.ts`: the fade-in, Ken Burns and rise keyframes plus `useAnimate`, which plays them with the Web Animations API.
 - `imageUtils.ts`: `compressImage`, which resizes an uploaded photo to at most 1920 px and re-encodes it as a JPEG data URL small enough for `localStorage`.
 - `pageMeta.ts`: `usePageMeta` keeps `document.title` and the favicon in sync with the destination.
 
@@ -36,7 +38,8 @@ This is a single-page React + TypeScript + Vite app, a trip countdown timer that
 
 ## Key conventions
 
-- Styles are inline. `App.css` holds the flip clock overrides and only the things inline styles cannot express: keyframes, `:hover` and `:focus-visible` rules, `::backdrop`, `prefers-reduced-motion`, and the `#root` width fix. `index.css` is the Vite template's globals.
-- `#root` needs `width: 100%` because `index.css` makes `body` a flex row. Without it the app shrinks to its content width.
-- The `@ts-expect-error` comment on the `--fcc-digit-block-width` CSS custom property is intentional; the flip clock component exposes that variable but it isn't typed.
+- All styles live in `src/styles.ts`, typed `satisfies Record<string, CSSProperties>` (never a type assertion). Components use `style={styles.x}`. Narrow-screen and state variants are separate keys (`cardNarrow`, `buttonDisabled`) that are spread on top of the base. Only values that exist at runtime (a photo URL, the clock zoom) are set where they are used. There are no class names, and `index.css` (the Vite template's globals) is the only stylesheet.
+- Anything CSS would normally do is done in TypeScript instead: animations use the Web Animations API through `useAnimate` and are switched off with `useMedia('(prefers-reduced-motion: reduce)')` (call it with no default argument, or the first render ignores the preference). The Customize `<dialog>` is itself the full-screen overlay because `::backdrop` cannot be styled inline. Hover lifts and focus rings are left to the browser.
+- Style the flip clock through its typed props (`labelStyle`, `separatorStyle`, `digitBlockStyle`, `style`), not CSS overrides or custom properties. A custom property key would not satisfy `Record<string, CSSProperties>`.
+- `#root` needs `width: 100%` (set in `index.css`) because the template makes `body` a flex row. Without it the app shrinks to its content width.
 - Use 16 px (1rem) text in form controls so iOS Safari does not zoom the page on focus.
