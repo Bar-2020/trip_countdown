@@ -28,16 +28,3 @@ provider "aws" {
     }
   }
 }
-
-# Billing and Budgets live in us-east-1, so the alert topic goes there too.
-provider "aws" {
-  alias  = "us_east_1"
-  region = "us-east-1"
-
-  default_tags {
-    tags = {
-      Project   = var.project_name
-      ManagedBy = "terraform"
-    }
-  }
-}

@@ -1,6 +1,5 @@
 resource "aws_sns_topic" "alerts" {
-  provider = aws.us_east_1
-  name     = "${var.project_name}-alerts"
+  name = "${var.project_name}-alerts"
 }
 
 data "aws_iam_policy_document" "alerts" {
@@ -23,14 +22,12 @@ data "aws_iam_policy_document" "alerts" {
 }
 
 resource "aws_sns_topic_policy" "alerts" {
-  provider = aws.us_east_1
-  arn      = aws_sns_topic.alerts.arn
-  policy   = data.aws_iam_policy_document.alerts.json
+  arn    = aws_sns_topic.alerts.arn
+  policy = data.aws_iam_policy_document.alerts.json
 }
 
 # The subscriber must click the confirmation link AWS emails after apply.
 resource "aws_sns_topic_subscription" "email" {
-  provider  = aws.us_east_1
   topic_arn = aws_sns_topic.alerts.arn
   protocol  = "email"
   endpoint  = var.alert_email
