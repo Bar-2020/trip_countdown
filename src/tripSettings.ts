@@ -4,19 +4,19 @@ export interface TripSettings {
     destination: string
     /** The takeoff instant as a UTC ISO 8601 string. */
     takeoff: string
-    /** A compressed data URL for an uploaded photo, or the path of a sample in `public/`. */
-    photo: string
+    /** A compressed data URL for an uploaded photo, or null for the default background. */
+    photo: string | null
 }
 
 export type SaveResult = { ok: true } | { ok: false; error: string }
 
-export const SAMPLE_PHOTOS = [
-    { label: 'Naxos', src: '/naxos.jpg' },
-    { label: 'Paros', src: '/paros.jpg' },
-    { label: 'Czechia', src: '/czechia.jpg' },
-] as const
-
 export const MAX_DESTINATION_LENGTH = 50
+
+/** The background shown until a visitor uploads a photo. */
+export const DEFAULT_BACKGROUND = 'linear-gradient(135deg, #0f766e 0%, #0369a1 55%, #312e81 100%)'
+
+/** The CSS `background-image` value for a trip's photo, or the default gradient. */
+export const backgroundFor = (photo: string | null) => (photo ? `url("${photo}")` : DEFAULT_BACKGROUND)
 
 // Bump the version in the key if the stored shape ever changes.
 const STORAGE_KEY = 'tripCountdown:v1'
@@ -33,7 +33,7 @@ export function createDefaultSettings(now = new Date()): TripSettings {
     return {
         destination: 'Your Next Adventure',
         takeoff: takeoff.toISOString(),
-        photo: SAMPLE_PHOTOS[0].src,
+        photo: null,
     }
 }
 
@@ -49,10 +49,6 @@ export function fromDateTimeLocal(value: string): string | null {
     return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
 
-function isAllowedPhoto(photo: string): boolean {
-    return DATA_URL_PATTERN.test(photo) || SAMPLE_PHOTOS.some((sample) => sample.src === photo)
-}
-
 // Stored data is untrusted: it may be hand-edited, truncated or from an older version.
 function parseStored(value: unknown): TripSettings | null {
     if (typeof value !== 'object' || value === null) return null
@@ -60,7 +56,7 @@ function parseStored(value: unknown): TripSettings | null {
     if (version !== STORAGE_VERSION) return null
     if (typeof destination !== 'string' || !destination.trim() || destination.length > MAX_DESTINATION_LENGTH) return null
     if (typeof takeoff !== 'string' || Number.isNaN(Date.parse(takeoff))) return null
-    if (typeof photo !== 'string' || !isAllowedPhoto(photo)) return null
+    if (photo !== null && (typeof photo !== 'string' || !DATA_URL_PATTERN.test(photo))) return null
     return { destination, takeoff, photo }
 }
 

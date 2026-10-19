@@ -8,7 +8,7 @@ import {useInterval, useMedia, useWindowSize} from "react-use";
 import {differenceInCalendarDays, format, isToday, isTomorrow} from 'date-fns'
 import SettingsPanel from './SettingsPanel'
 import {usePageMeta} from './pageMeta'
-import {useTripSettings} from './tripSettings'
+import {backgroundFor, useTripSettings} from './tripSettings'
 
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
@@ -83,12 +83,12 @@ function App() {
         >
             {/* The photo is keyed so a new one fades in instead of snapping. */}
             <div
-                key={settings.photo}
+                key={settings.photo ?? 'default'}
                 className="trip-backdrop"
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    backgroundImage: `url("${settings.photo}")`,
+                    backgroundImage: backgroundFor(settings.photo),
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                 }}

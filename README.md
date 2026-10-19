@@ -2,12 +2,12 @@
 
 A flip clock countdown to your next trip, made to be yours. Choose a destination, add your own photo and set the takeoff date and time. Everything is saved in your browser, so the countdown is waiting for you every time you come back. There is no account and no backend, and nothing ever leaves your device.
 
-![A flip clock counting down to Naxos, Greece over an aerial photo of a beach](docs/screenshot.jpg)
+![A flip clock counting down to Santorini over a sunset background](docs/home.jpg)
 
 ## Features
 
 - **Flip clock countdown** to the second, with a plain "62 days to go" line and the exact takeoff time underneath.
-- **Make it yours.** Set the destination name, the takeoff date and time, and a background photo. Upload your own or pick one of the samples.
+- **Make it yours.** Set the destination name, the takeoff date and time, and a background photo. Without a photo you get a gradient.
 - **Remembers your trip.** Saved in `localStorage`, one trip at a time. Saving a new trip replaces the old one.
 - **Photos just work.** Big phone photos are resized and compressed in the browser so they fit in storage. No upload to any server.
 - **Tab title and favicon follow the destination**, so a pinned tab says where you are headed.
@@ -16,8 +16,8 @@ A flip clock countdown to your next trip, made to be yours. Choose a destination
 - **Tiny and static.** One small bundle that you can host anywhere.
 
 <p>
-  <img src="docs/customize.jpg" alt="The Customize dialog with fields for destination, takeoff date and time, and photo" width="62%" />
-  <img src="docs/mobile.jpg" alt="The countdown on a phone" width="21%" />
+  <img src="docs/dialog.jpg" alt="The Customize dialog with fields for destination, takeoff date and time, and photo" width="62%" />
+  <img src="docs/phone.jpg" alt="The countdown on a phone" width="21%" />
 </p>
 
 ## How customization works
@@ -28,7 +28,7 @@ Open **Customize** in the top right corner.
 | --- | --- |
 | Destination | Up to 50 characters. Shown in the heading, the browser tab title and the favicon. |
 | Takeoff date and time | Read in your device's time zone and stored as an exact UTC instant, so the countdown stays correct if you travel. |
-| Photo | Upload an image, or pick Naxos, Paros or Czechia from the samples. |
+| Photo | Upload an image, or keep the default gradient. |
 
 Details worth knowing:
 
@@ -56,6 +56,7 @@ npm run dev        # start the dev server with hot reload
 npm run build      # type-check and build to dist/
 npm run preview    # serve the production build locally
 npm run lint       # run ESLint
+npm run verify     # lint, then build: run this before pushing
 ```
 
 ## Project structure
@@ -68,10 +69,16 @@ src/
   imageUtils.ts      in-browser photo resize and compression
   pageMeta.ts        browser tab title and favicon
   App.css            keyframes, focus styles and other things inline styles cannot do
-public/              sample photos and the default favicon
+public/              the default favicon
 docs/                README screenshots
 ```
 
 ## Deploying
 
 The build is plain static files in `dist/`, and the app has a single page with no client-side routing, so no rewrite rules are needed. Upload `dist/` to any static host such as Amazon S3 with CloudFront, Netlify, Vercel or GitHub Pages.
+
+## License
+
+The code is released under the [MIT License](LICENSE).
+
+No third-party photos are bundled. The screenshots above use a generated image, and any photo you upload stays in your own browser.

@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev        # Start Vite dev server with HMR
 npm run build      # Type-check (tsc -b) then Vite production build
 npm run lint       # ESLint across all TS/TSX files
+npm run verify     # lint, then build: run before pushing
 npm run preview    # Serve the production build locally
 ```
 
@@ -25,9 +26,9 @@ This is a single-page React + TypeScript + Vite app, a trip countdown timer that
 - `pageMeta.ts`: `usePageMeta` keeps `document.title` and the favicon in sync with the destination.
 
 **How it works:**
-- A trip is `{ destination, takeoff, photo }`. `takeoff` is a UTC ISO string; the dialog's `datetime-local` input is read in the visitor's time zone. `photo` is either a data URL from an upload or one of the sample paths in `public/` (`/naxos.jpg`, `/paros.jpg`, `/czechia.jpg`).
+- A trip is `{ destination, takeoff, photo }`. `takeoff` is a UTC ISO string; the dialog's `datetime-local` input is read in the visitor's time zone. `photo` is a compressed JPEG data URL from an upload, or `null` for the default gradient background (`DEFAULT_BACKGROUND` in `tripSettings.ts`). No third-party photos are bundled, so the repo can be public.
 - Only one trip is stored, under the key `tripCountdown:v1`. Saving replaces it, and a failed save (storage full or blocked) leaves the previous trip intact. If the stored shape ever changes, bump the version in the key and in `STORAGE_VERSION`.
-- Stored data is untrusted. `parseStored` rejects anything malformed (including photos that are not a JPEG, PNG or WebP data URL or a known sample path) and the app falls back to the defaults.
+- Stored data is untrusted. `parseStored` rejects anything malformed (including photos that are not `null` or a JPEG, PNG or WebP data URL) and the app falls back to the defaults.
 - With nothing saved, a sample countdown 30 days out is shown, computed once per page load.
 - Once the takeoff time passes (including on page load), the card shows the finished state and a "Plan your next trip" button, and `react-confetti` plays one burst unless the visitor prefers reduced motion.
 - `FlipClockCountdown` is given the takeoff as a number and a `key` so it remounts when the trip changes. It is wrapped in `aria-hidden`; screen readers get a sentence that changes once an hour instead.

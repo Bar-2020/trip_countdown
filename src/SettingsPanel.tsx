@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, CSSProperties, FormEvent } from 'react'
 import { compressImage } from './imageUtils'
-import { MAX_DESTINATION_LENGTH, SAMPLE_PHOTOS, fromDateTimeLocal, toDateTimeLocal } from './tripSettings'
+import { MAX_DESTINATION_LENGTH, backgroundFor, fromDateTimeLocal, toDateTimeLocal } from './tripSettings'
 import type { SaveResult, TripSettings } from './tripSettings'
 
 interface SettingsPanelProps {
@@ -176,37 +176,16 @@ function SettingsPanel({ settings, isCustom, onSave, onReset, onClose }: Setting
                     <legend style={{ ...labelStyle, padding: 0 }}>Destination photo</legend>
                     <div
                         role="img"
-                        aria-label="Preview of the selected photo"
+                        aria-label="Preview of the background"
                         style={{
                             height: '9rem',
                             borderRadius: '0.75rem',
-                            backgroundImage: `url("${photo}")`,
+                            backgroundImage: backgroundFor(photo),
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
-                            backgroundColor: '#e2e8f0',
                         }}
                     />
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginTop: '0.6rem' }}>
-                        {SAMPLE_PHOTOS.map((sample) => (
-                            <button
-                                key={sample.src}
-                                type="button"
-                                className="trip-btn"
-                                aria-pressed={photo === sample.src}
-                                aria-label={`Use the ${sample.label} sample photo`}
-                                onClick={() => setPhoto(sample.src)}
-                                style={{
-                                    width: '4.25rem',
-                                    height: '2.9rem',
-                                    padding: 0,
-                                    borderRadius: '0.5rem',
-                                    border: photo === sample.src ? '3px solid #0f766e' : '3px solid transparent',
-                                    backgroundImage: `url("${sample.src}")`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                }}
-                            />
-                        ))}
                         <button
                             type="button"
                             className="trip-btn"
@@ -214,8 +193,18 @@ function SettingsPanel({ settings, isCustom, onSave, onReset, onClose }: Setting
                             onClick={() => fileInputRef.current?.click()}
                             style={{ ...secondaryButtonStyle, padding: '0.5rem 0.9rem', fontSize: '0.9rem' }}
                         >
-                            {isCompressing ? 'Optimizing photo…' : 'Upload your own'}
+                            {isCompressing ? 'Optimizing photo…' : photo ? 'Choose another photo' : 'Upload a photo'}
                         </button>
+                        {photo && (
+                            <button
+                                type="button"
+                                className="trip-btn"
+                                onClick={() => setPhoto(null)}
+                                style={{ ...secondaryButtonStyle, padding: '0.5rem 0.9rem', fontSize: '0.9rem' }}
+                            >
+                                Use default background
+                            </button>
+                        )}
                         <input
                             ref={fileInputRef}
                             type="file"
