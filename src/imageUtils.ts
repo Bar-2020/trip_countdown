@@ -28,6 +28,9 @@ export async function compressImage(file: File): Promise<string> {
 
         const context = canvas.getContext('2d')
         if (!context) throw new Error("This browser can't process images.")
+        // The default filter skips pixels when a large photo is shrunk, which breaks thin lines
+        // such as branches and wires into jagged dashes. 'high' averages them instead.
+        context.imageSmoothingQuality = 'high'
         // JPEG has no transparency, so flatten PNG and WebP onto white.
         context.fillStyle = '#fff'
         context.fillRect(0, 0, canvas.width, canvas.height)
