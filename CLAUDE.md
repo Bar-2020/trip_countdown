@@ -31,7 +31,7 @@ This is a single-page React + TypeScript + Vite app — a personal trip countdow
 The site is hosted on AWS: a private S3 bucket behind CloudFront (Origin Access Control), served on the free `*.cloudfront.net` domain. The infrastructure is defined in `terraform/` (S3, CloudFront, a GitHub OIDC role in IAM, and an AWS Budgets alert through SNS).
 
 - **Deploys are automatic.** Pushing to `main` runs `.github/workflows/deploy.yml`: lint, build, sync `dist/` to S3, then invalidate CloudFront. The workflow assumes an IAM role through OIDC, so there are no AWS keys in GitHub. It reads `AWS_ROLE_ARN`, `S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID` (and optionally `AWS_REGION`) from the repo's Actions variables.
-- **To change the trip**, edit `src/App.tsx` as described above and merge to `main`. No Terraform run is needed.
+- **Trips are not deployed.** A visitor's destination, photo and takeoff time live in their own browser (see Architecture above), so changing a trip never needs a deploy or a Terraform run. Only code changes merged to `main` go out.
 - **Caching:** files under `assets/` are fingerprinted by Vite and cached for a year. `index.html` and the images in `public/` are cached for 5 minutes and also invalidated on every deploy.
 
 One-time setup (needs AWS credentials for an admin user or SSO profile, never root; Terraform 1.10 or newer):
