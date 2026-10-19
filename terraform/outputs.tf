@@ -14,6 +14,6 @@ output "distribution_id" {
 }
 
 output "deploy_role_arn" {
-  description = "Save as the AWS_ROLE_ARN Actions secret."
-  value       = aws_iam_role.deploy.arn
+  description = "Save as the AWS_ROLE_ARN Actions secret. Empty when enable_github_deploy is false."
+  value       = one(aws_iam_role.deploy[*].arn)
 }

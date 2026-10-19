@@ -80,7 +80,7 @@ The build is plain static files in `dist/`, and the app has a single page with n
 
 ### Amazon S3 + CloudFront with Terraform
 
-The `terraform/` folder builds a private S3 bucket behind CloudFront (on the free `*.cloudfront.net` address), a GitHub OIDC role that may deploy from `main`, and a 1 USD monthly budget alert sent by email. Everything is created in `eu-north-1` by default. To use another region, change `aws_region` in `terraform/variables.tf` and the backend region in `terraform/versions.tf`.
+The `terraform/` folder builds a private S3 bucket behind CloudFront (on the free `*.cloudfront.net` address), an optional GitHub OIDC role that may deploy from `main`, and a 1 USD monthly budget alert sent by email. Everything is created in `eu-north-1` by default. To use another region, change `aws_region` in `terraform/variables.tf` and the backend region in `terraform/versions.tf`.
 
 You need Terraform 1.10 or newer, the AWS CLI, and AWS credentials for an admin user or SSO profile (not the root user).
 
@@ -97,14 +97,37 @@ aws s3api put-public-access-block --bucket <state-bucket> \
 cd terraform
 terraform init -backend-config="bucket=<state-bucket>"   # commit the generated .terraform.lock.hcl
 terraform apply -var="alert_email=you@example.com"
+#    If your account forbids the GitHub sign-in, add -var="enable_github_deploy=false" (see below).
 
-# 3. Print the values to save as GitHub secrets
+# 3. Print the values you need
 terraform output
+```
+
+To avoid retyping the options, put them in `terraform/terraform.tfvars` (it is git-ignored):
+
+```hcl
+alert_email          = "you@example.com"
+enable_github_deploy = false   # only if your account forbids the GitHub sign-in
 ```
 
 Then save `AWS_ROLE_ARN`, `S3_BUCKET` and `CLOUDFRONT_DISTRIBUTION_ID` as repository **secrets**, either under Settings, Secrets and variables, Actions, Secrets, or with `gh secret set NAME --body VALUE`. Use secrets, not variables: GitHub masks secrets in the workflow logs, while variables are printed in plain text, and in a public repository anyone can read those logs. These values contain your AWS account ID.
 
-From then on, every push to `main` runs `.github/workflows/deploy.yml`: it lints, builds, uploads `dist/` to S3 and clears CloudFront's cached copies. It signs in to AWS through OIDC, so no AWS keys are stored in GitHub, and it skips itself until `AWS_ROLE_ARN` is set. Tear everything down with `terraform destroy`, then delete the state bucket.
+With `enable_github_deploy` on (the default), every push to `main` then runs `.github/workflows/deploy.yml`: it lints, builds, uploads `dist/` to S3 and clears CloudFront's cached copies. It signs in to AWS through OIDC, so no AWS keys are stored in GitHub, and it skips itself until `AWS_ROLE_ARN` is set. Tear everything down with `terraform destroy`, then delete the state bucket.
+
+#### If your account blocks the GitHub sign-in
+
+Some accounts, including ones created through the new AWS experience, are under an organization policy that forbids creating the OIDC provider. `terraform apply` then fails on `aws_iam_openid_connect_provider.github` with `explicit deny in a service control policy`. Everything else is still created. Set `enable_github_deploy = false`, run `terraform apply` again, and upload the site from your own computer after signing in to AWS. In PowerShell:
+
+```powershell
+npm ci; npm run build
+$Bucket = terraform -chdir=terraform output -raw bucket_name
+$Dist = terraform -chdir=terraform output -raw distribution_id
+aws s3 sync dist/assets "s3://$Bucket/assets" --cache-control "public,max-age=31536000,immutable"
+aws s3 sync dist "s3://$Bucket" --exclude "assets/*" --delete --cache-control "public,max-age=300"
+aws cloudfront create-invalidation --distribution-id $Dist --paths "/*"
+```
+
+In bash, use `BUCKET=$(terraform -chdir=terraform output -raw bucket_name)`, `DIST=$(terraform -chdir=terraform output -raw distribution_id)` and `"s3://$BUCKET"` instead. Run the same commands after every change you want online.
 
 ## License
 

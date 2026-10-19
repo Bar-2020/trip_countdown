@@ -16,6 +16,12 @@ variable "github_repo" {
   default     = "Bar-2020/trip_countdown"
 }
 
+variable "enable_github_deploy" {
+  description = "Create the GitHub OIDC provider and deploy role so GitHub Actions can deploy. Set to false if your account's policies deny creating an OIDC provider, then deploy from your own computer."
+  type        = bool
+  default     = true
+}
+
 variable "alert_email" {
   description = "Email address that receives budget alerts."
   type        = string
