@@ -27,7 +27,15 @@ body {
   display: flex;
   place-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  /* 100vh is taller than the visible area on mobile (address bar), which caused a scroll.
+     The vh line is the fallback for browsers without dvh. */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+html {
+  overflow: hidden;
 }
 
 h1 {

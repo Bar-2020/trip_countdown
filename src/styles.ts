@@ -37,7 +37,7 @@ export const styles = {
     page: {
         position: 'relative',
         width: '100%',
-        minHeight: '100dvh',
+        height: '100dvh',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
